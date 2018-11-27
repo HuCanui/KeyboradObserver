@@ -44,7 +44,7 @@ public class KeyboardVisibilityObserver {
     public void init(final Application application){
         application.registerActivityLifecycleCallbacks(new Application.ActivityLifecycleCallbacks() {
             private boolean wasOpened = false;
-            private Map<Activity, ViewTreeObserver.OnGlobalLayoutListener> layoutListenerMap = new HashMap<>();
+            private Map<String, ViewTreeObserver.OnGlobalLayoutListener> layoutListenerMap = new HashMap<>();
             @Override
             public void onActivityCreated(final Activity activity, Bundle savedInstanceState) {
                 try {
@@ -73,7 +73,7 @@ public class KeyboardVisibilityObserver {
                     };
 
                     activityRoot.getViewTreeObserver().addOnGlobalLayoutListener(layoutListener);
-                    layoutListenerMap.put(activity, layoutListener);
+                    layoutListenerMap.put(activity.getClass().getName(), layoutListener);
                 }catch (Exception e){
                     e.printStackTrace();
                 }
@@ -102,7 +102,7 @@ public class KeyboardVisibilityObserver {
             @Override
             public void onActivityDestroyed(Activity activity) {
                 try {
-                    ViewTreeObserver.OnGlobalLayoutListener layoutListener = layoutListenerMap.get(activity);
+                    ViewTreeObserver.OnGlobalLayoutListener layoutListener = layoutListenerMap.get(activity.getClass().getName());
                     if (layoutListener != null){
                         if (wasOpened){
                             EventBus.getDefault().post(new KeyboardVisibleEvent(!wasOpened));
@@ -115,6 +115,7 @@ public class KeyboardVisibilityObserver {
                             activityRoot.getViewTreeObserver()
                                     .removeGlobalOnLayoutListener(layoutListener);
                         }
+                        layoutListenerMap.remove(activity.getClass().getName());
                     }
                 }catch (Exception e){
                     e.printStackTrace();
